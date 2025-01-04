@@ -1,50 +1,29 @@
 ---
 title: "Current Package Dependencies"
-format: 
-  html:
-    toc: true
-    code-fold: false
+format: html
 ---
 
-This document provides a comprehensive view of the project's current package dependencies and R environment.
+This document provides essential information about the project's R environment and dependencies.
 
-## R Environment Information
+## R Environment
 
 ```{r}
 #| warning: false
 #| message: false
 
-# Load required packages
-if (!require("visNetwork")) install.packages("visNetwork")
-if (!require("tidyverse")) install.packages("tidyverse")
-library(visNetwork)
-library(tidyverse)
-
-# Function to display system info
-display_system_info <- function() {
-  info <- list(
-    "R Version" = R.version.string,
-    "R Home" = R.home(),
-    "Operating System" = Sys.info()["sysname"],
-    "Library Paths" = .libPaths()
+# Display R version and library paths
+info <- data.frame(
+  Item = c("R Version", "Library Paths"),
+  Value = c(
+    R.version.string,
+    paste(.libPaths(), collapse = "\n")
   )
-  
-  # Convert to data frame for better display
-  info_df <- data.frame(
-    Item = names(info),
-    Value = unlist(lapply(info, function(x) if(length(x) > 1) paste(x, collapse = "\n") else x))
-  )
-  
-  knitr::kable(info_df)
-}
+)
 
-# Display system information
-display_system_info()
+knitr::kable(info)
 ```
 
-## Project Dependencies
-
-### Direct Dependencies
+## Direct Dependencies
 
 These are the packages explicitly required by our project:
 
@@ -59,12 +38,10 @@ get_direct_deps <- function() {
     if ("Packages" %in% names(lock)) {
       deps <- names(lock$Packages)
       versions <- sapply(lock$Packages, function(x) x$Version)
-      source <- sapply(lock$Packages, function(x) x$Source)
       
       deps_df <- data.frame(
         Package = deps,
-        Version = versions,
-        Source = source
+        Version = versions
       )
       return(deps_df[order(deps_df$Package), ])
     }
@@ -72,105 +49,39 @@ get_direct_deps <- function() {
   return(data.frame())
 }
 
-# Display direct dependencies
-direct_deps <- get_direct_deps()
-knitr::kable(direct_deps)
+knitr::kable(get_direct_deps())
 ```
 
-### All Dependencies (Including Indirect)
+## All Dependencies
 
-This visualization shows all dependencies, including indirect ones. Hover over nodes to see package details:
+This shows all dependencies (both direct and indirect):
 
 ```{r}
 #| warning: false
 #| message: false
-#| fig.height: 8
-#| fig.width: 10
 
-# Function to get all dependencies
-get_all_deps <- function(pkg) {
-  deps <- tools::package_dependencies(pkg, recursive = TRUE)
-  deps_df <- data.frame()
+# Get all dependencies
+get_all_deps <- function() {
+  direct_deps <- get_direct_deps()$Package
+  all_deps <- unique(unlist(tools::package_dependencies(direct_deps, recursive = TRUE)))
   
-  for (p in names(deps)) {
-    if (length(deps[[p]]) > 0) {
-      df <- data.frame(
-        from = p,
-        to = deps[[p]]
-      )
-      deps_df <- rbind(deps_df, df)
-    }
-  }
+  deps_df <- data.frame(
+    Package = all_deps,
+    Type = "Indirect"
+  )
+  
+  # Mark direct dependencies
+  deps_df$Type[deps_df$Package %in% direct_deps] <- "Direct"
+  
+  # Sort by type (Direct first) then by package name
+  deps_df <- deps_df[order(deps_df$Type, deps_df$Package), ]
   return(deps_df)
 }
 
-# Create network visualization
-create_dep_network <- function(direct_deps) {
-  # Get all dependencies
-  all_deps <- get_all_deps(direct_deps$Package)
-  
-  # Create nodes
-  all_packages <- unique(c(all_deps$from, all_deps$to))
-  nodes <- data.frame(
-    id = all_packages,
-    label = all_packages,
-    group = ifelse(all_packages %in% direct_deps$Package, "Direct", "Indirect"),
-    title = paste("Package:", all_packages)  # Hover text
-  )
-  
-  # Create edges
-  edges <- data.frame(
-    from = all_deps$from,
-    to = all_deps$to,
-    arrows = "to"
-  )
-  
-  # Create network
-  visNetwork(nodes, edges) %>%
-    visGroups(groupname = "Direct", color = "lightblue") %>%
-    visGroups(groupname = "Indirect", color = "lightgrey") %>%
-    visOptions(highlightNearest = TRUE) %>%
-    visLayout(randomSeed = 123) %>%
-    visPhysics(solver = "forceAtlas2Based")
-}
-
-# Display network
-create_dep_network(direct_deps)
-```
-
-## Package Locations
-
-This shows where each package is installed:
-
-```{r}
-#| warning: false
-#| message: false
-
-# Function to get package locations
-get_package_locations <- function(packages) {
-  locations <- sapply(packages, function(pkg) {
-    desc <- packageDescription(pkg, lib.loc = .libPaths())
-    if (!is.null(desc)) {
-      return(dirname(attr(desc, "file")))
-    }
-    return(NA)
-  })
-  
-  df <- data.frame(
-    Package = names(locations),
-    Location = unname(locations)
-  )
-  return(df[order(df$Package), ])
-}
-
-# Display package locations
-pkg_locations <- get_package_locations(direct_deps$Package)
-knitr::kable(pkg_locations)
+knitr::kable(get_all_deps())
 ```
 
 ## Session Information
-
-Detailed R session information:
 
 ```{r}
 #| warning: false
