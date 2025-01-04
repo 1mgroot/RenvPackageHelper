@@ -3,7 +3,7 @@ title: "Current Package Dependencies"
 format: html
 ---
 
-This document provides essential information about the project's R environment and dependencies.
+This document shows the current R environment and package dependencies managed by renv.
 
 ## R Environment
 
@@ -23,62 +23,29 @@ info <- data.frame(
 knitr::kable(info)
 ```
 
-## Direct Dependencies
-
-These are the packages explicitly required by our project:
+## Package Dependencies
 
 ```{r}
 #| warning: false
 #| message: false
 
-# Get direct dependencies from renv.lock
-get_direct_deps <- function() {
-  if (file.exists("renv.lock")) {
-    lock <- jsonlite::fromJSON("renv.lock")
-    if ("Packages" %in% names(lock)) {
-      deps <- names(lock$Packages)
-      versions <- sapply(lock$Packages, function(x) x$Version)
-      
-      deps_df <- data.frame(
-        Package = deps,
-        Version = versions
-      )
-      return(deps_df[order(deps_df$Package), ])
-    }
-  }
-  return(data.frame())
-}
+# Load renv
+library(renv)
 
-knitr::kable(get_direct_deps())
-```
+# Get dependencies from renv
+deps <- renv::dependencies()
 
-## All Dependencies
+# Direct dependencies (packages used in project files)
+direct_deps <- unique(deps$Package)
+message("Direct Dependencies:")
+cat(paste("-", sort(direct_deps)), sep = "\n")
 
-This shows all dependencies (both direct and indirect):
+# Get all dependencies including indirect ones
+all_deps <- unique(unlist(tools::package_dependencies(direct_deps, recursive = TRUE)))
+indirect_deps <- setdiff(all_deps, direct_deps)
 
-```{r}
-#| warning: false
-#| message: false
-
-# Get all dependencies
-get_all_deps <- function() {
-  direct_deps <- get_direct_deps()$Package
-  all_deps <- unique(unlist(tools::package_dependencies(direct_deps, recursive = TRUE)))
-  
-  deps_df <- data.frame(
-    Package = all_deps,
-    Type = "Indirect"
-  )
-  
-  # Mark direct dependencies
-  deps_df$Type[deps_df$Package %in% direct_deps] <- "Direct"
-  
-  # Sort by type (Direct first) then by package name
-  deps_df <- deps_df[order(deps_df$Type, deps_df$Package), ]
-  return(deps_df)
-}
-
-knitr::kable(get_all_deps())
+message("\nIndirect Dependencies:")
+cat(paste("-", sort(indirect_deps)), sep = "\n")
 ```
 
 ## Session Information
