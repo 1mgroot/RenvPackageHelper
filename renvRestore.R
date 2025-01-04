@@ -8,16 +8,14 @@ setup_renv <- function() {
     install.packages("renv", repos = "https://cloud.r-project.org")
   }
   library(renv)
-  message("✓ renv is ready!")
-}
-
-# Function to check if a package is installed
-check_package <- function(pkg_name) {
-  if (require(pkg_name, character.only = TRUE, quietly = TRUE)) {
-    message(sprintf("✓ %s is installed and loaded", pkg_name))
-  } else {
-    message(sprintf("✗ %s is NOT installed properly", pkg_name))
+  
+  # Initialize renv if not already initialized
+  if (!file.exists("renv/activate.R")) {
+    message("\nInitializing renv for the first time...")
+    renv::init(bare = TRUE)
   }
+
+  message("✓ renv is ready!")
 }
 
 # Main execution
@@ -28,18 +26,5 @@ setup_renv()
 
 # 2. Restore the project environment
 message("\nRestoring project environment from renv.lock...")
+renv::consent(provided = TRUE)
 renv::restore()
-
-# 3. Verify key packages
-message("\nVerifying package installation:")
-check_package("tidyverse")
-check_package("palmerpenguins")
-
-# 4. Print next steps
-message("\nNext Steps:")
-message("1. Install Quarto from https://quarto.org/docs/get-started/")
-message("2. After installing Quarto, you can run the project's .qmd files")
-message("3. If you encounter any issues, check that:")
-message("   - R is up to date")
-message("   - You have write permissions in the project directory")
-message("   - Look for any error messages above") 
