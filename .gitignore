@@ -1,0 +1,48 @@
+# R specific
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.Rapp.history
+.RDataTmp
+.Rprofile
+
+# renv specific
+renv/library/
+renv/local/
+renv/cache/
+renv/staging/
+
+# Quarto specific
+/.quarto/
+*_files/
+*_cache/
+output/
+
+# System specific
+.DS_Store
+Thumbs.db
+.env
+
+# IDE specific
+.vscode/
+.idea/
+
+# Temporary files
+*.log
+*.tmp
+~$*.doc*
+~$*.xls*
+*.swp
+
+# Output files
+*.html
+*.pdf
+*.docx
+*.xlsx
+*.png
+*.jpeg
+*.jpg
+*.gif
+/output/

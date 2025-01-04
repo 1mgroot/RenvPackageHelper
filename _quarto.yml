@@ -1,0 +1,8 @@
+project:
+  type: website
+  output-dir: output
+
+format:
+  html:
+    theme: cosmo
+    toc: true 

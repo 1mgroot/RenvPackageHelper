@@ -1,0 +1,65 @@
+---
+title: "Project Setup with renv"
+format: html
+---
+
+## Project Environment Setup
+
+This document will set up the R environment for this project using `renv`. It will:
+
+1. Initialize renv for package management
+2. Install required packages
+3. Create a snapshot of the environment
+
+### Phase 1: Initialize renv
+
+```{r}
+#| warning: false
+#| message: false
+
+# Phase 1: Initialize renv
+init_renv <- function() {
+  # Install renv if not already installed
+  if (!require("renv")) {
+    install.packages("renv")
+  }
+  
+  # Load renv
+  library(renv)
+  
+  # Check if renv is already initialized (look for renv.lock)
+  if (!file.exists("renv.lock")) {
+    # If no lockfile exists, initialize renv
+    cat("Initializing new renv project...\n")
+    renv::init(force = TRUE)
+  } else {
+    # If lockfile exists, just activate
+    cat("Project already initialized. Activating renv...\n")
+    renv::activate()
+  }
+}
+
+# Run initialization
+init_renv()
+```
+
+### Phase 2: Install Packages
+
+```{r}
+#| warning: false
+#| message: false
+
+  # Take a snapshot of the current project state
+  renv::snapshot(force = TRUE)
+  
+```
+
+
+## Next Steps
+
+The environment is now set up! Other users can:
+
+1. Clone this project
+2. Open it in RStudio or their preferred R environment
+3. Run `renv::restore()` to install all packages at the exact versions used here
+4. Start working with the same environment setup 

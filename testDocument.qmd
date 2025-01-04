@@ -1,0 +1,55 @@
+---
+title: "Testing R Packages: Tidyverse and Palmer Penguins"
+format: html
+---
+
+## Setup and Package Installation
+
+```{r}
+#| message: false
+#| warning: false
+
+# Load packages
+library(tidyverse)
+library(palmerpenguins)
+library(shiny)
+```
+
+## Explore the Dataset
+
+```{r}
+# Look at the first few rows of the penguins dataset
+head(penguins)
+
+# Create a summary of penguin body mass by species
+penguin_summary <- penguins %>%
+  group_by(species) %>%
+  summarise(
+    avg_mass = mean(body_mass_g, na.rm = TRUE),
+    count = n()
+  )
+
+print(penguin_summary)
+```
+
+## Visualize the Data
+
+```{r}
+#| fig.width: 10
+#| fig.height: 6
+
+# Create a scatter plot of bill length vs bill depth, colored by species
+ggplot(penguins, 
+       aes(x = bill_length_mm, 
+           y = bill_depth_mm, 
+           color = species)) +
+  geom_point(size = 3, alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Penguin Bill Dimensions by Species",
+    x = "Bill Length (mm)",
+    y = "Bill Depth (mm)",
+    color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set2")
+```
