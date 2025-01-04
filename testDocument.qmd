@@ -12,7 +12,6 @@ format: html
 # Load packages
 library(tidyverse)
 library(palmerpenguins)
-library(shiny)
 ```
 
 ## Explore the Dataset
